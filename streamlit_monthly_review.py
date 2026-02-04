@@ -273,11 +273,24 @@ Looking forward to your response!"""
 # Function to load requests from Excel
 def load_requests(uploaded_file):
     try:
-        # Read Excel file with pandas, explicitly using openpyxl engine
-        df = pd.read_excel(uploaded_file, engine='openpyxl')
+        # Try multiple engines to read Excel file
+        engines = ['openpyxl', 'xlrd', 'odf']
+        df = None
+        
+        for engine in engines:
+            try:
+                df = pd.read_excel(uploaded_file, engine=engine)
+                break
+            except:
+                continue
+        
+        if df is None:
+            # Fallback: try without specifying engine
+            df = pd.read_excel(uploaded_file)
         
         # Skip header rows and get data starting from row 5 (index 4)
-        df = df.iloc[4:]  # Skip first 4 rows (headers)
+        if len(df) > 4:
+            df = df.iloc[4:]  # Skip first 4 rows (headers)
         
         requests = []
         
@@ -285,13 +298,13 @@ def load_requests(uploaded_file):
             # Get values by column index
             try:
                 student_name = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
-                year = str(row.iloc[5]) if pd.notna(row.iloc[5]) else ""
-                subject = str(row.iloc[7]) if pd.notna(row.iloc[7]) else ""
+                year = str(row.iloc[5]) if len(row) > 5 and pd.notna(row.iloc[5]) else ""
+                subject = str(row.iloc[7]) if len(row) > 7 and pd.notna(row.iloc[7]) else ""
                 requested_time = str(row.iloc[13]) if len(row) > 13 and pd.notna(row.iloc[13]) else ""
                 available_times = str(row.iloc[14]) if len(row) > 14 and pd.notna(row.iloc[14]) else ""
                 notes = str(row.iloc[16]) if len(row) > 16 and pd.notna(row.iloc[16]) else ""
                 
-                if student_name == "nan" or student_name == "":
+                if student_name == "nan" or student_name == "" or student_name == "None":
                     continue
                 
                 time_slot = requested_time if requested_time != "nan" and requested_time else available_times
@@ -303,12 +316,12 @@ def load_requests(uploaded_file):
                     "time_slot": time_slot,
                     "notes": notes if notes and notes != "nan" else "No specific notes"
                 })
-            except:
+            except Exception as e:
                 continue
         
         return requests
     except Exception as e:
-        st.error(f"Error reading file: {str(e)}\n\nMake sure openpyxl is installed: pip install openpyxl")
+        st.error(f"❌ Error reading file: {str(e)}\n\n**Solution:** Please make sure you're using a .xlsx file and try uploading again.")
         return []
 
 # Initialize session state
