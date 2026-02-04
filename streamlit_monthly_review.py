@@ -334,7 +334,7 @@ if 'uploaded_file' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <div class="header-title">📚 Monthly Review Portal</div>
-    <div class="header-subtitle">Extract and format student lesson requests with elegance</div>
+    <div class="header-subtitle">Created By Mohammed Abdelwahed</div>
 </div>
 """, unsafe_allow_html=True)
 
