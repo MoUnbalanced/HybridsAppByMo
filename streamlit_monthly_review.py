@@ -104,37 +104,6 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
     }
     
-    .detail-row {
-        display: flex;
-        align-items: flex-start;
-        margin: 1rem 0;
-        padding: 0.8rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        border-left: 3px solid #10b981;
-    }
-    
-    .detail-icon {
-        font-size: 1.5rem;
-        margin-right: 1rem;
-        min-width: 30px;
-    }
-    
-    .detail-label {
-        font-weight: 600;
-        color: #fbbf24;
-        font-size: 0.9rem;
-        margin-bottom: 0.3rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .detail-content {
-        color: #d1fae5;
-        font-size: 1.1rem;
-        line-height: 1.6;
-    }
-    
     /* Upload section */
     .upload-section {
         background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
@@ -271,44 +240,30 @@ def extract_and_format_requests(uploaded_file):
         return None, str(e)
 
 def display_request_card(request):
-    """Display a single request in a beautiful card format"""
+    """Display a single request in text format"""
     st.markdown(f"""
     <div class="request-card">
         <div class="request-number">📋 Request #{request['number']}</div>
-        
-        <div class="detail-row">
-            <div class="detail-icon">👤</div>
-            <div>
-                <div class="detail-label">Student Name</div>
-                <div class="detail-content">{request['student_name']}</div>
-            </div>
-        </div>
-        
-        <div class="detail-row">
-            <div class="detail-icon">📚</div>
-            <div>
-                <div class="detail-label">Year & Subject</div>
-                <div class="detail-content">Year {request['year']} - {request['subject']}</div>
-            </div>
-        </div>
-        
-        <div class="detail-row">
-            <div class="detail-icon">🕒</div>
-            <div>
-                <div class="detail-label">Preferred Time Slot</div>
-                <div class="detail-content">{request['time_slot']}</div>
-            </div>
-        </div>
-        
-        <div class="detail-row">
-            <div class="detail-icon">📝</div>
-            <div>
-                <div class="detail-label">Topics or Notes</div>
-                <div class="detail-content">{request['notes']}</div>
-            </div>
-        </div>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+**We'd love to allocate a Monthly Review lesson to you!**  
+Here are the details:
+
+👤 **Student:** {request['student_name']}  
+📚 **Year and Subject:** Year {request['year']} - {request['subject']}  
+🕒 **Preferred Time Slot:** {request['time_slot']}  
+📝 **Topics or Notes:** {request['notes']}
+
+Please let us know if you're available to take this class.  
+✅ If you're happy with the time slot, we'll proceed with the setup.  
+⏳ If not, kindly suggest an alternative time and we'll confirm with the parent.
+
+**Looking forward to your response!**
+    """)
+    
+    st.markdown("---")
 
 def create_text_export(requests):
     """Create formatted text for export"""
