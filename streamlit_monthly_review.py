@@ -273,51 +273,44 @@ Looking forward to your response!"""
 # Function to load requests from Excel
 def load_requests(uploaded_file):
     try:
-        # Try to read Excel file - let pandas choose the best engine
-        try:
-            df = pd.read_excel(uploaded_file)
-        except:
-            # If that fails, try with xlrd engine
-            try:
-                df = pd.read_excel(uploaded_file, engine='xlrd')
-            except:
-                st.error("❌ Could not read Excel file. Please try uploading again.")
-                return []
-        
-        # Skip header rows and get data starting from row 5 (index 4)
-        if len(df) > 4:
-            df = df.iloc[4:]  # Skip first 4 rows (headers)
+        # Read Excel file, skipping first 4 rows (headers)
+        df = pd.read_excel(uploaded_file, skiprows=4)
         
         requests = []
         
         for idx, row in df.iterrows():
-            # Get values by column index
             try:
+                # Extract student name from first column
                 student_name = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
+                
+                # Skip empty rows
+                if not student_name or student_name.lower() in ["nan", "none", ""]:
+                    continue
+                
+                # Extract other fields by column index
                 year = str(row.iloc[5]).strip() if len(row) > 5 and pd.notna(row.iloc[5]) else ""
                 subject = str(row.iloc[7]).strip() if len(row) > 7 and pd.notna(row.iloc[7]) else ""
                 requested_time = str(row.iloc[13]).strip() if len(row) > 13 and pd.notna(row.iloc[13]) else ""
                 available_times = str(row.iloc[14]).strip() if len(row) > 14 and pd.notna(row.iloc[14]) else ""
                 notes = str(row.iloc[16]).strip() if len(row) > 16 and pd.notna(row.iloc[16]) else ""
                 
-                # Skip empty rows
-                if not student_name or student_name.lower() in ["nan", "none", ""]:
-                    continue
-                
-                time_slot = requested_time if requested_time and requested_time.lower() != "nan" else available_times
+                # Determine time slot
+                time_slot = requested_time if (requested_time and requested_time.lower() != "nan") else available_times
+                if not time_slot or time_slot.lower() == "nan":
+                    time_slot = "Not specified"
                 
                 requests.append({
                     "student_name": student_name,
-                    "year": year,
-                    "subject": subject,
+                    "year": year if year and year.lower() != "nan" else "N/A",
+                    "subject": subject if subject and subject.lower() != "nan" else "N/A",
                     "time_slot": time_slot,
-                    "notes": notes if notes and notes.lower() != "nan" else "No specific notes"
+                    "notes": notes if (notes and notes.lower() != "nan") else "No specific notes"
                 })
             except Exception as row_error:
                 continue
         
         if not requests:
-            st.warning("⚠️ No student data found in the Excel file. Please check the file format.")
+            st.warning("⚠️ No student data found in the Excel file.")
         
         return requests
     except Exception as e:
