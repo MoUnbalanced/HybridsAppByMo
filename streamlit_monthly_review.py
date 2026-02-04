@@ -222,6 +222,10 @@ def extract_and_format_requests(uploaded_file):
             available_times = row[available_times_idx] if available_times_idx < len(row) else ""
             notes = row[notes_idx] if notes_idx < len(row) else ""
 
+            # Skip rows with missing critical data
+            if not student_name or not year or not subject:
+                continue
+
             # Use available times if requested time is not specified
             time_slot = requested_time if requested_time else available_times
 
@@ -240,28 +244,37 @@ def extract_and_format_requests(uploaded_file):
         return None, str(e)
 
 def display_request_card(request):
-    """Display a single request in text format"""
+    """Display a single request in text format with copy button"""
     st.markdown(f"""
     <div class="request-card">
         <div class="request-number">📋 Request #{request['number']}</div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown(f"""
-**We'd love to allocate a Monthly Review lesson to you!**  
+    # Create the message text
+    message_text = f"""We'd love to allocate a Monthly Review lesson to you!
 Here are the details:
 
-👤 **Student:** {request['student_name']}  
-📚 **Year and Subject:** Year {request['year']} - {request['subject']}  
-🕒 **Preferred Time Slot:** {request['time_slot']}  
-📝 **Topics or Notes:** {request['notes']}
+👤 Student: {request['student_name']}
+📚 Year and Subject: Year {request['year']} - {request['subject']}
+🕒 Preferred Time Slot: {request['time_slot']}
+📝 Topics or Notes: {request['notes']}
 
-Please let us know if you're available to take this class.  
-✅ If you're happy with the time slot, we'll proceed with the setup.  
+Please let us know if you're available to take this class.
+✅ If you're happy with the time slot, we'll proceed with the setup.
 ⏳ If not, kindly suggest an alternative time and we'll confirm with the parent.
 
-**Looking forward to your response!**
-    """)
+Looking forward to your response!"""
+    
+    # Display in black box for easy reading
+    st.markdown(f"""
+    <div style="background-color: #1a1a1a; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; color: #ffffff; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <pre style="margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #ffffff;">{message_text}</pre>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Copy button
+    st.code(message_text, language=None)
     
     st.markdown("---")
 
