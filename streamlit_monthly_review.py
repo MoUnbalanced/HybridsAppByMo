@@ -1,7 +1,6 @@
 import streamlit as st
-import openpyxl
-from pathlib import Path
 import pandas as pd
+from pathlib import Path
 
 # Page configuration
 st.set_page_config(
@@ -272,42 +271,39 @@ Please let us know if you're available to take this class.
 Looking forward to your response!"""
 
 # Function to load requests from Excel
-def load_requests(file_path):
-    wb = openpyxl.load_workbook(file_path)
-    ws = wb.active
+def load_requests(uploaded_file):
+    # Read Excel file with pandas
+    df = pd.read_excel(uploaded_file)
     
-    # Column indices (0-based)
-    name_idx = 0
-    year_idx = 5
-    subject_idx = 7
-    requested_time_idx = 13
-    available_times_idx = 14
-    notes_idx = 16
-    
-    # Process each data row (starting from row 6)
-    data_rows = list(ws.iter_rows(min_row=6, values_only=True))
+    # Skip header rows and get data starting from row 5 (index 4)
+    df = df.iloc[4:]  # Skip first 4 rows (headers)
     
     requests = []
-    for row in data_rows:
-        if row[0] is None:
+    
+    for idx, row in df.iterrows():
+        # Get values by column index
+        try:
+            student_name = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
+            year = str(row.iloc[5]) if pd.notna(row.iloc[5]) else ""
+            subject = str(row.iloc[7]) if pd.notna(row.iloc[7]) else ""
+            requested_time = str(row.iloc[13]) if len(row) > 13 and pd.notna(row.iloc[13]) else ""
+            available_times = str(row.iloc[14]) if len(row) > 14 and pd.notna(row.iloc[14]) else ""
+            notes = str(row.iloc[16]) if len(row) > 16 and pd.notna(row.iloc[16]) else ""
+            
+            if student_name == "nan" or student_name == "":
+                continue
+            
+            time_slot = requested_time if requested_time != "nan" and requested_time else available_times
+            
+            requests.append({
+                "student_name": student_name,
+                "year": year,
+                "subject": subject,
+                "time_slot": time_slot,
+                "notes": notes if notes and notes != "nan" else "No specific notes"
+            })
+        except:
             continue
-        
-        student_name = row[name_idx] if name_idx < len(row) else ""
-        year = row[year_idx] if year_idx < len(row) else ""
-        subject = row[subject_idx] if subject_idx < len(row) else ""
-        requested_time = row[requested_time_idx] if requested_time_idx < len(row) else ""
-        available_times = row[available_times_idx] if available_times_idx < len(row) else ""
-        notes = row[notes_idx] if notes_idx < len(row) else ""
-        
-        time_slot = requested_time if requested_time else available_times
-        
-        requests.append({
-            "student_name": student_name,
-            "year": year,
-            "subject": subject,
-            "time_slot": time_slot,
-            "notes": notes if notes else "No specific notes"
-        })
     
     return requests
 
@@ -334,7 +330,7 @@ if uploaded_file is not None:
     try:
         # Load requests
         st.session_state.requests = load_requests(uploaded_file)
-        st.session_state.uploaded_file = uploaded_file.name
+        st.session_state.uploaded_file = uploaded_file.name if hasattr(uploaded_file, 'name') else "Uploaded File"
         
         # Stats
         col1, col2, col3 = st.columns(3)
