@@ -252,7 +252,7 @@ def display_request_card(request):
     """, unsafe_allow_html=True)
     
     # Create the message text
-    message_text = f"""We'd love to allocate a Monthly Review lesson to you!
+    message_text = f"""Dear\nWe'd love to allocate a Monthly Review lesson to you!
 Here are the details:
 
 👤 Student: {request['student_name']}
@@ -282,7 +282,7 @@ def create_text_export(requests):
     """Create formatted text for export"""
     text_output = ""
     for request in requests:
-        text_output += f"""We'd love to allocate a Monthly Review lesson to you! 
+        text_output += f"""Dear\nWe'd love to allocate a Monthly Review lesson to you! 
 Here are the details:
 👤 Student: {request['student_name']}
 📚 Year and Subject: Year {request['year']} - {request['subject']}
@@ -304,7 +304,7 @@ def main():
     st.markdown("""
     <div class="app-header">
         <div class="app-title">📚 Monthly Review Requests</div>
-        <div class="app-subtitle">Premium Request Management System</div>
+        <div class="app-subtitle">Premium Request Management System By Mohammed Abdelwahed</div>
     </div>
     """, unsafe_allow_html=True)
 
