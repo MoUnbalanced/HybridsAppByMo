@@ -273,20 +273,16 @@ Looking forward to your response!"""
 # Function to load requests from Excel
 def load_requests(uploaded_file):
     try:
-        # Try multiple engines to read Excel file
-        engines = ['openpyxl', 'xlrd', 'odf']
-        df = None
-        
-        for engine in engines:
-            try:
-                df = pd.read_excel(uploaded_file, engine=engine)
-                break
-            except:
-                continue
-        
-        if df is None:
-            # Fallback: try without specifying engine
+        # Try to read Excel file - let pandas choose the best engine
+        try:
             df = pd.read_excel(uploaded_file)
+        except:
+            # If that fails, try with xlrd engine
+            try:
+                df = pd.read_excel(uploaded_file, engine='xlrd')
+            except:
+                st.error("❌ Could not read Excel file. Please try uploading again.")
+                return []
         
         # Skip header rows and get data starting from row 5 (index 4)
         if len(df) > 4:
@@ -297,31 +293,35 @@ def load_requests(uploaded_file):
         for idx, row in df.iterrows():
             # Get values by column index
             try:
-                student_name = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
-                year = str(row.iloc[5]) if len(row) > 5 and pd.notna(row.iloc[5]) else ""
-                subject = str(row.iloc[7]) if len(row) > 7 and pd.notna(row.iloc[7]) else ""
-                requested_time = str(row.iloc[13]) if len(row) > 13 and pd.notna(row.iloc[13]) else ""
-                available_times = str(row.iloc[14]) if len(row) > 14 and pd.notna(row.iloc[14]) else ""
-                notes = str(row.iloc[16]) if len(row) > 16 and pd.notna(row.iloc[16]) else ""
+                student_name = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
+                year = str(row.iloc[5]).strip() if len(row) > 5 and pd.notna(row.iloc[5]) else ""
+                subject = str(row.iloc[7]).strip() if len(row) > 7 and pd.notna(row.iloc[7]) else ""
+                requested_time = str(row.iloc[13]).strip() if len(row) > 13 and pd.notna(row.iloc[13]) else ""
+                available_times = str(row.iloc[14]).strip() if len(row) > 14 and pd.notna(row.iloc[14]) else ""
+                notes = str(row.iloc[16]).strip() if len(row) > 16 and pd.notna(row.iloc[16]) else ""
                 
-                if student_name == "nan" or student_name == "" or student_name == "None":
+                # Skip empty rows
+                if not student_name or student_name.lower() in ["nan", "none", ""]:
                     continue
                 
-                time_slot = requested_time if requested_time != "nan" and requested_time else available_times
+                time_slot = requested_time if requested_time and requested_time.lower() != "nan" else available_times
                 
                 requests.append({
                     "student_name": student_name,
                     "year": year,
                     "subject": subject,
                     "time_slot": time_slot,
-                    "notes": notes if notes and notes != "nan" else "No specific notes"
+                    "notes": notes if notes and notes.lower() != "nan" else "No specific notes"
                 })
-            except Exception as e:
+            except Exception as row_error:
                 continue
+        
+        if not requests:
+            st.warning("⚠️ No student data found in the Excel file. Please check the file format.")
         
         return requests
     except Exception as e:
-        st.error(f"❌ Error reading file: {str(e)}\n\n**Solution:** Please make sure you're using a .xlsx file and try uploading again.")
+        st.error(f"❌ Error reading file: {str(e)}")
         return []
 
 # Initialize session state
@@ -334,7 +334,7 @@ if 'uploaded_file' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <div class="header-title">📚 Monthly Review Portal</div>
-    <div class="header-subtitle">Created By Mohammed Abdelwahed</div>
+    <div class="header-subtitle">Extract and format student lesson requests with elegance</div>
 </div>
 """, unsafe_allow_html=True)
 
