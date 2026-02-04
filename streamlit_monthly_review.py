@@ -1,465 +1,421 @@
 import streamlit as st
+import openpyxl
 import pandas as pd
-from pathlib import Path
+from io import BytesIO
 
 # Page configuration
 st.set_page_config(
-    page_title="Monthly Review Portal",
+    page_title="Monthly Review Requests",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for glassy design
+# Custom CSS for glassy premium design with emerald and gold
 st.markdown("""
 <style>
-    * {
-        margin: 0;
-        padding: 0;
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+    
+    /* Main app styling */
+    .stApp {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 50%, #10b981 75%, #34d399 100%);
+        font-family: 'Inter', sans-serif;
     }
     
-    html, body, [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0f172a 0%, #1a3a3a 50%, #0f172a 100%);
-        color: #e0f2fe;
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Main container */
+    .main .block-container {
+        padding: 2rem 3rem;
+        max-width: 1400px;
     }
     
-    [data-testid="stMainBlockContainer"] {
-        padding-top: 2rem;
+    /* Glass card effect */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     }
     
     /* Header styling */
-    .header-container {
+    .app-header {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(236, 201, 75, 0.2));
+        backdrop-filter: blur(15px);
+        border-radius: 25px;
+        border: 2px solid rgba(236, 201, 75, 0.3);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
         text-align: center;
-        margin-bottom: 3rem;
-        padding: 2rem;
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 40px rgba(236, 201, 75, 0.2);
     }
     
-    .header-title {
-        font-size: 2.5rem;
-        font-weight: 900;
-        background: linear-gradient(135deg, #6ee7b7 0%, #facc15 50%, #6ee7b7 100%);
+    .app-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ecc94b 0%, #f6e05e 50%, #faf089 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         margin-bottom: 0.5rem;
-        letter-spacing: -1px;
+        text-shadow: 0 0 30px rgba(236, 201, 75, 0.3);
     }
     
-    .header-subtitle {
-        color: #cbd5e1;
-        font-size: 0.95rem;
+    .app-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.2rem;
+        color: #d1fae5;
         font-weight: 300;
-        letter-spacing: 1px;
+        letter-spacing: 2px;
     }
     
-    /* Glass morphism effect */
-    .glass-card {
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-radius: 12px;
-        backdrop-filter: blur(10px);
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .glass-card:hover {
-        background: rgba(15, 23, 42, 0.7);
-        border-color: rgba(16, 185, 129, 0.4);
-        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1);
-    }
-    
-    /* Request cards */
+    /* Request card styling */
     .request-card {
-        background: rgba(15, 23, 42, 0.4);
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        border-radius: 10px;
-        padding: 1.25rem;
-        margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(12px);
+        border-radius: 18px;
+        border: 1px solid rgba(236, 201, 75, 0.2);
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
     .request-card:hover {
-        background: rgba(15, 23, 42, 0.6);
-        border-color: rgba(16, 185, 129, 0.4);
-        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 12px 48px rgba(236, 201, 75, 0.3);
+        border: 1px solid rgba(236, 201, 75, 0.4);
     }
     
-    .card-title {
-        color: #6ee7b7;
-        font-size: 1.15rem;
+    .request-number {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        color: #fbbf24;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
     }
     
-    .card-meta {
-        color: #94a3b8;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
+    .detail-row {
+        display: flex;
+        align-items: flex-start;
+        margin: 1rem 0;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border-left: 3px solid #10b981;
     }
     
-    .card-time {
-        color: #facc15;
-        font-size: 0.85rem;
-        margin: 0.5rem 0;
+    .detail-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        min-width: 30px;
     }
     
-    .card-notes {
-        color: #cbd5e1;
-        font-size: 0.8rem;
-        font-style: italic;
-        margin-top: 0.5rem;
-    }
-    
-    /* Buttons */
-    .stButton > button {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
+    .detail-label {
         font-weight: 600;
+        color: #fbbf24;
         font-size: 0.9rem;
-        padding: 0.5rem 1.25rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #6ee7b7 0%, #10b981 100%);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        transform: translateY(-2px);
-    }
-    
-    .gold-button > button {
-        background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-    }
-    
-    .gold-button > button:hover {
-        background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
-        box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
-        transform: translateY(-2px);
-    }
-    
-    /* Upload area */
-    .uploadedFile {
-        color: #6ee7b7 !important;
-    }
-    
-    [data-testid="stFileUploadDropzone"] {
-        border: 2px dashed rgba(16, 185, 129, 0.3) !important;
-        background: rgba(15, 23, 42, 0.3) !important;
-        border-radius: 12px !important;
-    }
-    
-    [data-testid="stFileUploadDropzone"]:hover {
-        border-color: rgba(16, 185, 129, 0.6) !important;
-        background: rgba(15, 23, 42, 0.5) !important;
-    }
-    
-    /* Stats boxes */
-    .stat-box {
-        background: rgba(15, 23, 42, 0.5);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-radius: 12px;
-        padding: 1.5rem;
-        text-align: center;
-        backdrop-filter: blur(10px);
-    }
-    
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 900;
-        background: linear-gradient(135deg, #6ee7b7 0%, #facc15 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .stat-label {
-        color: #94a3b8;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
         letter-spacing: 1px;
     }
     
-    /* Expander */
-    [data-testid="stExpander"] {
-        background: rgba(15, 23, 42, 0.4) !important;
-        border: 1px solid rgba(16, 185, 129, 0.2) !important;
-        border-radius: 10px !important;
+    .detail-content {
+        color: #d1fae5;
+        font-size: 1.1rem;
+        line-height: 1.6;
     }
     
-    [data-testid="stExpander"] > div {
-        background: rgba(15, 23, 42, 0.5) !important;
-    }
-    
-    /* Success message */
-    .stSuccess {
-        background: rgba(16, 185, 129, 0.1) !important;
-        border-left: 4px solid #10b981 !important;
-    }
-    
-    .stSuccess > div {
-        color: #6ee7b7 !important;
-    }
-    
-    /* Info message */
-    .stInfo {
-        background: rgba(100, 150, 200, 0.1) !important;
-        border-left: 4px solid #3b82f6 !important;
-    }
-    
-    .stInfo > div {
-        color: #93c5fd !important;
-    }
-    
-    /* Columns */
-    [data-testid="column"] {
-        padding: 0 0.5rem;
-    }
-    
-    /* Text styling */
-    h1, h2, h3 {
-        color: #e0f2fe !important;
-    }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #10b981;
-        border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #6ee7b7;
-    }
-    
-    /* Footer */
-    .footer {
+    /* Upload section */
+    .upload-section {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 2px dashed rgba(236, 201, 75, 0.4);
+        padding: 3rem;
         text-align: center;
-        padding: 2rem;
-        color: #94a3b8;
-        border-top: 1px solid rgba(16, 185, 129, 0.1);
-        margin-top: 3rem;
+        margin: 2rem 0;
+    }
+    
+    /* Buttons */
+    .stDownloadButton button {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .stDownloadButton button:hover {
+        background: linear-gradient(135deg, #059669, #10b981);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        transform: translateY(-2px);
+    }
+    
+    /* Divider */
+    .gold-divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+        margin: 2rem 0;
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    
+    /* Stats cards */
+    .stat-card {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(236, 201, 75, 0.1));
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        padding: 1.5rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    
+    .stat-number {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fbbf24;
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+    }
+    
+    .stat-label {
+        color: #d1fae5;
         font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 0.5rem;
+    }
+    
+    /* File uploader */
+    .stFileUploader {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    /* Success/Error messages */
+    .stSuccess, .stError, .stWarning {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Helper function to generate message
-def generate_message(request_data):
-    return f"""We'd love to allocate a Monthly Review lesson to you! 
-Here are the details:
-👤 Student: {request_data['student_name']}
-📚 Year and Subject: Year {request_data['year']} - {request_data['subject']}
-🕒 Preferred Time Slot: {request_data['time_slot']}
-📝 Topics or Notes: {request_data['notes']}
-Please let us know if you're available to take this class.
-✅ If you're happy with the time slot, we'll proceed with the setup.
-⏳ If not, kindly suggest an alternative time and we'll confirm with the parent.
-Looking forward to your response!"""
-
-# Function to load requests from Excel
-def load_requests(uploaded_file):
+def extract_and_format_requests(uploaded_file):
+    """
+    Read Excel file and return formatted monthly review requests
+    """
     try:
-        # Read Excel file, skipping first 4 rows (headers)
-        df = pd.read_excel(uploaded_file, skiprows=4)
-        
+        # Read Excel file
+        wb = openpyxl.load_workbook(uploaded_file)
+        ws = wb.active
+
+        # Get the header row (row 5)
+        headers = []
+        for cell in ws[5]:
+            headers.append(cell.value)
+
+        # Column indices (0-based)
+        name_idx = 0  # A
+        year_idx = 5  # F
+        subject_idx = 7  # H
+        requested_time_idx = 13  # N
+        available_times_idx = 14  # O
+        notes_idx = 16  # Q
+
+        # Process each data row
+        data_rows = list(ws.iter_rows(min_row=6, values_only=True))
         requests = []
-        
-        for idx, row in df.iterrows():
-            try:
-                # Extract student name from first column
-                student_name = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
-                
-                # Skip empty rows
-                if not student_name or student_name.lower() in ["nan", "none", ""]:
-                    continue
-                
-                # Extract other fields by column index
-                year = str(row.iloc[5]).strip() if len(row) > 5 and pd.notna(row.iloc[5]) else ""
-                subject = str(row.iloc[7]).strip() if len(row) > 7 and pd.notna(row.iloc[7]) else ""
-                requested_time = str(row.iloc[13]).strip() if len(row) > 13 and pd.notna(row.iloc[13]) else ""
-                available_times = str(row.iloc[14]).strip() if len(row) > 14 and pd.notna(row.iloc[14]) else ""
-                notes = str(row.iloc[16]).strip() if len(row) > 16 and pd.notna(row.iloc[16]) else ""
-                
-                # Determine time slot
-                time_slot = requested_time if (requested_time and requested_time.lower() != "nan") else available_times
-                if not time_slot or time_slot.lower() == "nan":
-                    time_slot = "Not specified"
-                
-                requests.append({
-                    "student_name": student_name,
-                    "year": year if year and year.lower() != "nan" else "N/A",
-                    "subject": subject if subject and subject.lower() != "nan" else "N/A",
-                    "time_slot": time_slot,
-                    "notes": notes if (notes and notes.lower() != "nan") else "No specific notes"
-                })
-            except Exception as row_error:
+
+        for idx, row in enumerate(data_rows, 1):
+            if row[0] is None:  # Skip empty rows
                 continue
-        
-        if not requests:
-            st.warning("⚠️ No student data found in the Excel file.")
-        
-        return requests
+
+            student_name = row[name_idx] if name_idx < len(row) else ""
+            year = row[year_idx] if year_idx < len(row) else ""
+            subject = row[subject_idx] if subject_idx < len(row) else ""
+            requested_time = row[requested_time_idx] if requested_time_idx < len(row) else ""
+            available_times = row[available_times_idx] if available_times_idx < len(row) else ""
+            notes = row[notes_idx] if notes_idx < len(row) else ""
+
+            # Use available times if requested time is not specified
+            time_slot = requested_time if requested_time else available_times
+
+            requests.append({
+                'number': len(requests) + 1,
+                'student_name': student_name,
+                'year': year,
+                'subject': subject,
+                'time_slot': time_slot,
+                'notes': notes if notes else "No specific notes"
+            })
+
+        return requests, None
+
     except Exception as e:
-        st.error(f"❌ Error reading file: {str(e)}")
-        return []
+        return None, str(e)
 
-# Initialize session state
-if 'requests' not in st.session_state:
-    st.session_state.requests = []
-if 'uploaded_file' not in st.session_state:
-    st.session_state.uploaded_file = None
-
-# Header
-st.markdown("""
-<div class="header-container">
-    <div class="header-title">📚 Monthly Review Portal</div>
-    <div class="header-subtitle">Extract and format student lesson requests with elegance</div>
-</div>
-""", unsafe_allow_html=True)
-
-# Upload section
-st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Upload Excel File", type=['xlsx'], label_visibility="collapsed")
-st.markdown('</div>', unsafe_allow_html=True)
-
-if uploaded_file is not None:
-    try:
-        # Load requests
-        st.session_state.requests = load_requests(uploaded_file)
-        st.session_state.uploaded_file = uploaded_file.name if hasattr(uploaded_file, 'name') else "Uploaded File"
+def display_request_card(request):
+    """Display a single request in a beautiful card format"""
+    st.markdown(f"""
+    <div class="request-card">
+        <div class="request-number">📋 Request #{request['number']}</div>
         
-        # Stats
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f"""
-            <div class="stat-box">
-                <div class="stat-number">{len(st.session_state.requests)}</div>
-                <div class="stat-label">TOTAL REQUESTS</div>
+        <div class="detail-row">
+            <div class="detail-icon">👤</div>
+            <div>
+                <div class="detail-label">Student Name</div>
+                <div class="detail-content">{request['student_name']}</div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
         
-        with col2:
-            st.markdown(f"""
-            <div class="stat-box">
-                <div class="stat-number">{st.session_state.uploaded_file[:20]}</div>
-                <div class="stat-label">FILE LOADED</div>
+        <div class="detail-row">
+            <div class="detail-icon">📚</div>
+            <div>
+                <div class="detail-label">Year & Subject</div>
+                <div class="detail-content">Year {request['year']} - {request['subject']}</div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
         
-        with col3:
-            st.markdown(f"""
-            <div class="stat-box">
-                <div class="stat-number">✓</div>
-                <div class="stat-label">READY TO EXPORT</div>
+        <div class="detail-row">
+            <div class="detail-icon">🕒</div>
+            <div>
+                <div class="detail-label">Preferred Time Slot</div>
+                <div class="detail-content">{request['time_slot']}</div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
         
-        # Export button
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        col1, col2 = st.columns([3, 1])
-        with col2:
-            st.markdown('<div class="gold-button">', unsafe_allow_html=True)
-            if st.button("⬇️ Export All", use_container_width=True):
-                messages = []
-                for request in st.session_state.requests:
-                    messages.append(generate_message(request))
-                    messages.append("\n" + "="*80 + "\n")
-                
-                export_text = "\n".join(messages)
-                st.download_button(
-                    label="Download",
-                    data=export_text,
-                    file_name="monthly_review_messages.txt",
-                    mime="text/plain",
-                    use_container_width=True
-                )
-            st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Requests grid
-        st.markdown("### Student Requests")
-        
-        for idx, request in enumerate(st.session_state.requests):
-            st.markdown("""
-            <div class="request-card">
-            """, unsafe_allow_html=True)
-            
-            col1, col2 = st.columns([4, 1])
-            
-            with col1:
-                st.markdown(f'<div class="card-title">{request["student_name"]}</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="card-meta">Year {request["year"]} • {request["subject"]}</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="card-time">🕒 {request["time_slot"]}</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="card-notes">{request["notes"]}</div>', unsafe_allow_html=True)
-            
-            with col2:
-                col2_1, col2_2 = st.columns(2)
-                with col2_1:
-                    if st.button("View", key=f"view_{idx}", use_container_width=True):
-                        st.session_state[f"expand_{idx}"] = True
-                
-                with col2_2:
-                    if st.button("Copy", key=f"copy_{idx}", use_container_width=True):
-                        message = generate_message(request)
-                        st.info(f"✅ Message for {request['student_name']} copied to clipboard!")
-                        st.code(message, language="text")
-            
-            # Expandable message view
-            if st.session_state.get(f"expand_{idx}", False):
-                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                st.text_area(
-                    label="Formatted Message",
-                    value=generate_message(request),
-                    height=250,
-                    disabled=True,
-                    key=f"message_{idx}"
-                )
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button(f"📋 Copy Message", key=f"copy_full_{idx}", use_container_width=True):
-                        st.success(f"Message copied to clipboard!")
-                
-                with col2:
-                    if st.button(f"✕ Close", key=f"close_{idx}", use_container_width=True):
-                        st.session_state[f"expand_{idx}"] = False
-                        st.rerun()
-                
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-    
-    except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
-
-else:
-    # Empty state
-    st.markdown("""
-    <div class="glass-card" style="text-align: center; padding: 3rem;">
-        <div style="color: #6ee7b7; font-size: 2rem; margin-bottom: 1rem;">📁</div>
-        <div style="color: #e0f2fe; font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 600;">No requests yet</div>
-        <div style="color: #94a3b8;">Upload an Excel file to get started</div>
+        <div class="detail-row">
+            <div class="detail-icon">📝</div>
+            <div>
+                <div class="detail-label">Topics or Notes</div>
+                <div class="detail-content">{request['notes']}</div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-# Footer
-st.markdown("""
-<div class="footer">
-    <p>Monthly Review Portal v1.0 • Built with Streamlit</p>
-    <p style="font-size: 0.85rem;">© 2026 - All Rights Reserved</p>
-</div>
-""", unsafe_allow_html=True)
+def create_text_export(requests):
+    """Create formatted text for export"""
+    text_output = ""
+    for request in requests:
+        text_output += f"""We'd love to allocate a Monthly Review lesson to you! 
+Here are the details:
+👤 Student: {request['student_name']}
+📚 Year and Subject: Year {request['year']} - {request['subject']}
+🕒 Preferred Time Slot: {request['time_slot']}
+📝 Topics or Notes: {request['notes']}
+Please let us know if you're available to take this class.
+✅ If you're happy with the time slot, we'll proceed with the setup.
+⏳ If not, kindly suggest an alternative time and we'll confirm with the parent.
+Looking forward to your response!
+
+{"=" * 80}
+
+"""
+    return text_output
+
+# Main app
+def main():
+    # Header
+    st.markdown("""
+    <div class="app-header">
+        <div class="app-title">📚 Monthly Review Requests</div>
+        <div class="app-subtitle">Premium Request Management System</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Upload section
+    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+    st.markdown("### ✨ Upload Your Excel File")
+    st.markdown("Upload your monthly review requests Excel file to get started")
+    uploaded_file = st.file_uploader("", type=['xlsx', 'xls'], label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if uploaded_file is not None:
+        with st.spinner('🔄 Processing your requests...'):
+            requests, error = extract_and_format_requests(uploaded_file)
+
+        if error:
+            st.error(f"❌ Error processing file: {error}")
+        elif requests:
+            # Display stats
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div class="stat-number">{len(requests)}</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                subjects = set([r['subject'] for r in requests if r['subject']])
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div class="stat-number">{len(subjects)}</div>
+                    <div class="stat-label">Unique Subjects</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                years = set([r['year'] for r in requests if r['year']])
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div class="stat-number">{len(years)}</div>
+                    <div class="stat-label">Year Groups</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+
+            # Export button
+            text_export = create_text_export(requests)
+            st.download_button(
+                label="📥 Download All Requests as Text",
+                data=text_export,
+                file_name="monthly_review_requests.txt",
+                mime="text/plain"
+            )
+
+            st.markdown('<div class="gold-divider"></div>', unsafe_allow_html=True)
+
+            # Display requests
+            st.markdown("### 📋 All Requests")
+            for request in requests:
+                display_request_card(request)
+        else:
+            st.warning("⚠️ No requests found in the uploaded file.")
+    else:
+        # Welcome message
+        st.markdown("""
+        <div class="glass-card" style="text-align: center; padding: 3rem;">
+            <h2 style="color: #fbbf24; font-family: 'Playfair Display', serif; margin-bottom: 1rem;">
+                Welcome to Monthly Review Requests Manager
+            </h2>
+            <p style="color: #d1fae5; font-size: 1.1rem; line-height: 1.8;">
+                Upload your Excel file to view beautifully formatted monthly review requests.<br>
+                The system will automatically extract and display all student information,<br>
+                including preferred time slots and special notes.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
