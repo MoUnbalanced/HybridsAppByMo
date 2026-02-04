@@ -247,7 +247,7 @@ def display_request_card(request):
     """Display a single request in text format with copy button"""
     st.markdown(f"""
     <div class="request-card">
-        <div class="request-number">📋 Request #{request['number']}</div>
+        <div class="request-number">📋 Request #{request['number']} Subject is:{request['subject']}</div>
     </div>
     """, unsafe_allow_html=True)
     
