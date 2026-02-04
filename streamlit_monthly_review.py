@@ -272,40 +272,44 @@ Looking forward to your response!"""
 
 # Function to load requests from Excel
 def load_requests(uploaded_file):
-    # Read Excel file with pandas
-    df = pd.read_excel(uploaded_file)
-    
-    # Skip header rows and get data starting from row 5 (index 4)
-    df = df.iloc[4:]  # Skip first 4 rows (headers)
-    
-    requests = []
-    
-    for idx, row in df.iterrows():
-        # Get values by column index
-        try:
-            student_name = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
-            year = str(row.iloc[5]) if pd.notna(row.iloc[5]) else ""
-            subject = str(row.iloc[7]) if pd.notna(row.iloc[7]) else ""
-            requested_time = str(row.iloc[13]) if len(row) > 13 and pd.notna(row.iloc[13]) else ""
-            available_times = str(row.iloc[14]) if len(row) > 14 and pd.notna(row.iloc[14]) else ""
-            notes = str(row.iloc[16]) if len(row) > 16 and pd.notna(row.iloc[16]) else ""
-            
-            if student_name == "nan" or student_name == "":
+    try:
+        # Read Excel file with pandas, explicitly using openpyxl engine
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
+        
+        # Skip header rows and get data starting from row 5 (index 4)
+        df = df.iloc[4:]  # Skip first 4 rows (headers)
+        
+        requests = []
+        
+        for idx, row in df.iterrows():
+            # Get values by column index
+            try:
+                student_name = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
+                year = str(row.iloc[5]) if pd.notna(row.iloc[5]) else ""
+                subject = str(row.iloc[7]) if pd.notna(row.iloc[7]) else ""
+                requested_time = str(row.iloc[13]) if len(row) > 13 and pd.notna(row.iloc[13]) else ""
+                available_times = str(row.iloc[14]) if len(row) > 14 and pd.notna(row.iloc[14]) else ""
+                notes = str(row.iloc[16]) if len(row) > 16 and pd.notna(row.iloc[16]) else ""
+                
+                if student_name == "nan" or student_name == "":
+                    continue
+                
+                time_slot = requested_time if requested_time != "nan" and requested_time else available_times
+                
+                requests.append({
+                    "student_name": student_name,
+                    "year": year,
+                    "subject": subject,
+                    "time_slot": time_slot,
+                    "notes": notes if notes and notes != "nan" else "No specific notes"
+                })
+            except:
                 continue
-            
-            time_slot = requested_time if requested_time != "nan" and requested_time else available_times
-            
-            requests.append({
-                "student_name": student_name,
-                "year": year,
-                "subject": subject,
-                "time_slot": time_slot,
-                "notes": notes if notes and notes != "nan" else "No specific notes"
-            })
-        except:
-            continue
-    
-    return requests
+        
+        return requests
+    except Exception as e:
+        st.error(f"Error reading file: {str(e)}\n\nMake sure openpyxl is installed: pip install openpyxl")
+        return []
 
 # Initialize session state
 if 'requests' not in st.session_state:
@@ -317,7 +321,7 @@ if 'uploaded_file' not in st.session_state:
 st.markdown("""
 <div class="header-container">
     <div class="header-title">📚 Monthly Review Portal</div>
-    <div class="header-subtitle">Created By Mohammed Abdelwahed</div>
+    <div class="header-subtitle">Extract and format student lesson requests with elegance</div>
 </div>
 """, unsafe_allow_html=True)
 
