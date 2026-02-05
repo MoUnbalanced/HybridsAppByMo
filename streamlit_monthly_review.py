@@ -21,6 +21,14 @@ st.markdown("""
     .stApp {
         background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 50%, #10b981 75%, #34d399 100%);
         font-family: 'Inter', sans-serif;
+        animation: gradientShift 15s ease infinite;
+        background-size: 200% 200%;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     /* Hide Streamlit branding */
@@ -28,10 +36,22 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
+    /* Hide Fork button and toolbar menu */
+    [data-testid="stToolbar"] {visibility: hidden;}
+    .stDeployButton {visibility: hidden;}
+    [data-testid="stDecoration"] {visibility: hidden;}
+    button[kind="header"] {visibility: hidden;}
+    
     /* Main container */
     .main .block-container {
         padding: 2rem 3rem;
         max-width: 1400px;
+        animation: fadeIn 0.8s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     /* Glass card effect */
@@ -43,6 +63,13 @@ st.markdown("""
         padding: 2rem;
         margin: 1rem 0;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 50px rgba(16, 185, 129, 0.4);
+        border: 1px solid rgba(236, 201, 75, 0.4);
     }
     
     /* Header styling */
@@ -55,6 +82,18 @@ st.markdown("""
         margin-bottom: 2rem;
         text-align: center;
         box-shadow: 0 10px 40px rgba(236, 201, 75, 0.2);
+        animation: headerFloat 3s ease-in-out infinite;
+        transition: all 0.4s ease;
+    }
+    
+    .app-header:hover {
+        transform: scale(1.03);
+        box-shadow: 0 15px 60px rgba(236, 201, 75, 0.4);
+    }
+    
+    @keyframes headerFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
     }
     
     .app-title {
@@ -67,6 +106,12 @@ st.markdown("""
         background-clip: text;
         margin-bottom: 0.5rem;
         text-shadow: 0 0 30px rgba(236, 201, 75, 0.3);
+        animation: titlePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes titlePulse {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
     }
     
     .app-subtitle {
@@ -75,6 +120,12 @@ st.markdown("""
         color: #d1fae5;
         font-weight: 300;
         letter-spacing: 2px;
+        animation: subtitleSlide 1s ease-out;
+    }
+    
+    @keyframes subtitleSlide {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
     }
     
     /* Request card styling */
@@ -86,13 +137,26 @@ st.markdown("""
         padding: 2rem;
         margin: 1.5rem 0;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: slideIn 0.6s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from { 
+            opacity: 0; 
+            transform: translateX(-50px);
+        }
+        to { 
+            opacity: 1; 
+            transform: translateX(0);
+        }
     }
     
     .request-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 48px rgba(236, 201, 75, 0.3);
-        border: 1px solid rgba(236, 201, 75, 0.4);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(236, 201, 75, 0.5);
+        border: 1px solid rgba(236, 201, 75, 0.6);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
     }
     
     .request-number {
@@ -102,6 +166,13 @@ st.markdown("""
         color: #fbbf24;
         margin-bottom: 1rem;
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    
+    .request-card:hover .request-number {
+        transform: scale(1.1) rotate(-2deg);
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
     }
     
     /* Upload section */
@@ -113,6 +184,20 @@ st.markdown("""
         padding: 3rem;
         text-align: center;
         margin: 2rem 0;
+        transition: all 0.4s ease;
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { border-color: rgba(236, 201, 75, 0.4); }
+        50% { border-color: rgba(236, 201, 75, 0.7); }
+    }
+    
+    .upload-section:hover {
+        transform: scale(1.03);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(52, 211, 153, 0.15));
+        border: 2px dashed rgba(236, 201, 75, 0.7);
+        box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
     }
     
     /* Buttons */
@@ -125,13 +210,37 @@ st.markdown("""
         font-weight: 600;
         font-size: 1rem;
         box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stDownloadButton button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stDownloadButton button:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
     .stDownloadButton button:hover {
         background: linear-gradient(135deg, #059669, #10b981);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.8);
+        transform: translateY(-3px) scale(1.05);
+    }
+    
+    .stDownloadButton button:active {
+        transform: translateY(-1px) scale(1.02);
     }
     
     /* Divider */
@@ -140,6 +249,12 @@ st.markdown("""
         background: linear-gradient(90deg, transparent, #fbbf24, transparent);
         margin: 2rem 0;
         box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+        animation: dividerGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes dividerGlow {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; box-shadow: 0 0 20px rgba(251, 191, 36, 0.6); }
     }
     
     /* Stats cards */
@@ -151,6 +266,20 @@ st.markdown("""
         padding: 1.5rem;
         text-align: center;
         margin: 1rem 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: statFloat 3s ease-in-out infinite;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px) rotate(2deg) scale(1.08);
+        box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
+        border: 1px solid rgba(251, 191, 36, 0.7);
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(236, 201, 75, 0.15));
+    }
+    
+    @keyframes statFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
     }
     
     .stat-number {
@@ -159,6 +288,12 @@ st.markdown("""
         font-weight: 700;
         color: #fbbf24;
         text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-number {
+        transform: scale(1.2);
+        text-shadow: 0 0 30px rgba(251, 191, 36, 0.9);
     }
     
     .stat-label {
@@ -167,6 +302,12 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 2px;
         margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-label {
+        letter-spacing: 3px;
+        color: #ffffff;
     }
     
     /* File uploader */
@@ -174,6 +315,12 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
         padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stFileUploader:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.02);
     }
     
     /* Success/Error messages */
@@ -181,6 +328,61 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border-radius: 12px;
+        animation: messageSlide 0.5s ease-out;
+    }
+    
+    @keyframes messageSlide {
+        from { 
+            opacity: 0; 
+            transform: translateX(-20px);
+        }
+        to { 
+            opacity: 1; 
+            transform: translateX(0);
+        }
+    }
+    
+    /* Code block styling (for copy button) */
+    .stCodeBlock {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .stCodeBlock:hover {
+        transform: scale(1.01);
+        box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Markdown content animations */
+    .stMarkdown {
+        animation: contentFadeIn 0.6s ease-out;
+    }
+    
+    @keyframes contentFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #059669, #10b981);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -247,12 +449,12 @@ def display_request_card(request):
     """Display a single request in text format with copy button"""
     st.markdown(f"""
     <div class="request-card">
-        <div class="request-number">📋 Request #{request['number']}, <b>Y{request['year']}</b> {request['subject']}</div>
+        <div class="request-number">📋 Request #{request['number']}</div>
     </div>
     """, unsafe_allow_html=True)
     
     # Create the message text
-    message_text = f"""Dear\nWe'd love to allocate a Monthly Review lesson to you!
+    message_text = f"""We'd love to allocate a Monthly Review lesson to you!
 Here are the details:
 
 👤 Student: {request['student_name']}
@@ -267,11 +469,11 @@ Please let us know if you're available to take this class.
 Looking forward to your response!"""
     
     # Display in black box for easy reading
-    # st.markdown(f"""
-    # <div style="background-color: #1a1a1a; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; color: #ffffff; font-family: 'Inter', sans-serif; line-height: 1.8;">
-    #     <pre style="margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #ffffff;">{message_text}</pre>
-    # </div>
-    # """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background-color: #1a1a1a; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; color: #ffffff; font-family: 'Inter', sans-serif; line-height: 1.8;">
+        <pre style="margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #ffffff;">{message_text}</pre>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Copy button
     st.code(message_text, language=None)
@@ -282,7 +484,7 @@ def create_text_export(requests):
     """Create formatted text for export"""
     text_output = ""
     for request in requests:
-        text_output += f"""Dear\nWe'd love to allocate a Monthly Review lesson to you! 
+        text_output += f"""We'd love to allocate a Monthly Review lesson to you! 
 Here are the details:
 👤 Student: {request['student_name']}
 📚 Year and Subject: Year {request['year']} - {request['subject']}
@@ -304,7 +506,7 @@ def main():
     st.markdown("""
     <div class="app-header">
         <div class="app-title">📚 Monthly Review Requests</div>
-        <div class="app-subtitle">Premium Request Management System By Mohammed Abdelwahed</div>
+        <div class="app-subtitle">Premium Request Management System</div>
     </div>
     """, unsafe_allow_html=True)
 
