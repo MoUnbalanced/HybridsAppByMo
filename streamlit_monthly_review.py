@@ -470,11 +470,11 @@ Please let us know if you're available to take this class.
 Looking forward to your response!"""
     
     # Display in black box for easy reading
-    st.markdown(f"""
-    <div style="background-color: #1a1a1a; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; color: #ffffff; font-family: 'Inter', sans-serif; line-height: 1.8;">
-        <pre style="margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #ffffff;">{message_text}</pre>
-    </div>
-    """, unsafe_allow_html=True)
+    # st.markdown(f"""
+    # <div style="background-color: #1a1a1a; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; color: #ffffff; font-family: 'Inter', sans-serif; line-height: 1.8;">
+    #     <pre style="margin: 0; white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #ffffff;">{message_text}</pre>
+    # </div>
+    # """, unsafe_allow_html=True)
     
     # Copy button
     st.code(message_text, language=None)
@@ -506,8 +506,8 @@ def main():
     # Header
     st.markdown("""
     <div class="app-header">
-        <div class="app-title">📚 Monthly Review Requests</div>
-        <div class="app-subtitle">Premium Request Management System</div>
+        <div class="app-title">📚 Monthly Review Requests Portal</div>
+        <div class="app-subtitle">Premium Request Management System By Mohammed Abdelwahed</div>
     </div>
     """, unsafe_allow_html=True)
 
