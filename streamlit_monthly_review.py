@@ -160,7 +160,7 @@ st.markdown("""
     }
     
     .request-number {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Inter', serif;
         font-size: 1.8rem;
         font-weight: 700;
         color: #fbbf24;
