@@ -171,8 +171,9 @@ st.markdown("""
     }
     
     .request-card:hover .request-number {
-        transform: scale(1.1) rotate(-2deg);
-        text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+        transform: scale(1.15);
+        text-shadow: 0 0 30px rgba(251, 191, 36, 1), 0 0 40px rgba(251, 191, 36, 0.8), 0 0 50px rgba(251, 191, 36, 0.6);
+        filter: brightness(1.3);
     }
     
     /* Upload section */
