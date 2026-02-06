@@ -485,7 +485,7 @@ def create_text_export(requests):
     """Create formatted text for export"""
     text_output = ""
     for request in requests:
-        text_output += f"""We'd love to allocate a Monthly Review lesson to you! 
+        text_output += f"""Dear\nWe'd love to allocate a Monthly Review lesson to you! 
 Here are the details:
 👤 Student: {request['student_name']}
 📚 Year and Subject: Year {request['year']} - {request['subject']}
@@ -512,7 +512,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # Upload section
-    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+    # st.markdown('<div class="upload-section">', unsafe_allow_html=True)
     st.markdown("### ✨ Upload Your Excel File")
     st.markdown("Upload your monthly review requests Excel file to get started")
     uploaded_file = st.file_uploader("", type=['xlsx', 'xls'], label_visibility="collapsed")
