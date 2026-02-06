@@ -455,7 +455,7 @@ def display_request_card(request):
     """, unsafe_allow_html=True)
     
     # Create the message text
-    message_text = f"""We'd love to allocate a Monthly Review lesson to you!
+    message_text = f"""Dear\nWe'd love to allocate a Monthly Review lesson to you!
 Here are the details:
 
 👤 Student: {request['student_name']}
