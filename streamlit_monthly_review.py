@@ -162,7 +162,7 @@ st.markdown("""
     .request-number {
         font-family: 'Playfair Display', serif;
         font-size: 1.8rem;
-        font-weight: 600;
+        font-weight: 700;
         color: #fbbf24;
         margin-bottom: 1rem;
         text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
@@ -449,7 +449,7 @@ def display_request_card(request):
     """Display a single request in text format with copy button"""
     st.markdown(f"""
     <div class="request-card">
-        <div class="request-number">📋 Request #{request['number']}</div>
+        <div class="request-number"><strong>📋 Request #{request['number']} - Year {request['year']} {request['subject']}</strong></div>
     </div>
     """, unsafe_allow_html=True)
     
